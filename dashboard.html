@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打卡系統</title>
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+</head>
+<body>
+    <h2>打卡系統</h2>
+    <p>您的員工編號: <span id="emp_id">{{ emp_id }}</span></p>
+    
+    <h3>您的 QR Code</h3>
+    <img src="data:image/png;base64,{{ qr_code }}" alt="您的 QR Code">
+
+    <h3>掃描 QR Code 以打卡</h3>
+    <video id="preview" width="300" height="200"></video>
+    <button onclick="startScan()">開始掃描</button>
+
+    <script>
+        let scanner = new ZXing.BrowserQRCodeReader();
+        
+        function startScan() {
+            scanner.decodeFromVideoDevice(null, 'preview', (result, err) => {
+                if (result) {
+                    let emp_id = result.text;
+                    sendToServer(emp_id);
+                    scanner.reset(); // 停止掃描
+                }
+            });
+        }
+
+        function sendToServer(emp_id) {
+            fetch('/scan_qr', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ emp_id: emp_id, status: '上班' })
+            })
+            .then(response => response.json())
+            .then(data => alert(data.message))
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
