@@ -1,103 +1,38 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <title>出勤紀錄</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>出勤紀錄</title>
-    <link rel="stylesheet" href="fullcalendar.min.css" />
     <link rel="stylesheet" href="style.css">
-
-    <style>
-        /* 上方bar樣式 */
-        .navbar {
-            width: 100%;
-            padding: 10px;
-            background-color: rgb(56, 114, 67);
-            color: white;
-        }
-        .navbar button {
-            background-color: #47a05b;
-        }
-        .navbar button:hover {
-            background-color: #81d881;
-        }
-        /* 日曆樣式 */
-        #calendar {
-            margin-top: 20px;
-            width: 80%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-    </style>
+    <link rel="stylesheet" href="calendar.css">
+    <script src="calender.js"></script>
 </head>
 <body>
-
     <!-- 上方bar -->
     <div class="navbar">
         <span>員工編號: <strong id="employeeId">12345</strong></span>
-            <!-- <button id="button1">按鈕1</button>
-            <button id="button2">按鈕2</button> -->
-        <button id="logoutBtn">登出</button>
+        <button id="logoutBtn" onclick="logout()">登出</button>
     </div>
 
-    <!-- 顯示日曆 -->
-    <div id="calendar"></div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.2.0/fullcalendar.min.js"></script>
+    <!-- 日曆 -->
+    <div class="calendar">
+        <div class="header">
+            <button class="prev-month"><</button>
+            <span class="month-title"></span>
+            <button class="next-month">></button>
+        </div>
+        <div class="weekdays">
+            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div class="days">
+        </div>
+    </div>
 
     <script>
-        // Google Sheets API 載入函式，讀取資料並格式化為適合顯示的事件
-        function getAttendanceData() {
-            // 這裡假設你已經有授權來讀取 Google Sheets 資料
-            // 假設資料結構：日期、員工編號、狀態（請假、遲到、上班）
-
-            const attendanceData = [
-                { date: '2025-03-01', status: '請假' },
-                { date: '2025-03-05', status: '遲到' },
-                { date: '2025-03-08', status: '上班' }
-            ];
-
-            return attendanceData.map(item => {
-                return {
-                    title: item.status,
-                    start: item.date,
-                    description: item.status
-                };
-            });
+        function logout(){
+            window.location.href="login.html";
         }
-
-        // 初始化日曆
-        $(document).ready(function() {
-            $('#calendar').fullCalendar({
-                header: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'month,agendaWeek,agendaDay'
-                },
-                events: getAttendanceData(), // 這裡將出勤資料傳入
-                eventRender: function(event, element) {
-                    element.attr('title', event.description); // 顯示更多詳細資料
-                }
-            });
-
-            // 登出按鈕事件
-            $('#logoutBtn').click(function() {
-                alert("登出功能，這裡可以添加實際登出的邏輯");
-                // 執行登出動作，如清除Session，或重新導向到登錄頁面
-            });
-
-            // 按鈕1和按鈕2的事件可以根據需要進行設置
-            $('#button1').click(function() {
-                alert("按鈕1被點擊");
-            });
-
-            $('#button2').click(function() {
-                alert("按鈕2被點擊");
-            });
-        });
     </script>
-
 </body>
 </html>
