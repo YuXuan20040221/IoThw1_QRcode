@@ -5,41 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>打卡系統</title>
     <script src="https://unpkg.com/@zxing/library@latest"></script>
+    <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
-    <h2>打卡系統</h2>
-    <p>您的員工編號: <span id="emp_id">{{ emp_id }}</span></p>
+    <h1>Start WORK!!!</h1>
     
-    <h3>您的 QR Code</h3>
-    <img src="data:image/png;base64,{{ qr_code }}" alt="您的 QR Code">
-
-    <h3>掃描 QR Code 以打卡</h3>
-    <video id="preview" width="300" height="200"></video>
-    <button onclick="startScan()">開始掃描</button>
+    <h2>Scan QR Code to check in:</h2>
+    <video id="preview" width="400" height="300"></video>
+    <p id="status"></p>
 
     <script>
+        // 確保使用者已登入
+        // let emp_id = sessionStorage.getItem("emp_id");
+        // if (!emp_id) {
+        //     window.location.href = "login.html";
+        // }
+
         let scanner = new ZXing.BrowserQRCodeReader();
-        
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxcIkbdEaumzcqyyAKeT2PiC3l0yhoF2FC6zG7WrNyakuCIkLwpmiBDdLwPW6BhUzoPxA/exec";  // 替換為你的 Google Apps Script 網址
+
         function startScan() {
             scanner.decodeFromVideoDevice(null, 'preview', (result, err) => {
                 if (result) {
-                    let emp_id = result.text;
-                    sendToServer(emp_id);
-                    scanner.reset(); // 停止掃描
+                    let qr_code_data = result.text;
+                    sendToGoogleSheets(emp_id, qr_code_data);
+                    scanner.reset(); // 掃描成功後停止
                 }
             });
         }
 
-        function sendToServer(emp_id) {
-            fetch('/scan_qr', {
+        function sendToGoogleSheets(emp_id, qr_code_data) {
+            fetch(GAS_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ emp_id: emp_id, status: '上班' })
+                body: JSON.stringify({ emp_id: emp_id, qr_data: qr_code_data, status: '上班' })
             })
             .then(response => response.json())
-            .then(data => alert(data.message))
+            .then(data => {
+                document.getElementById("status").innerText = data.message;
+            })
             .catch(error => console.error('Error:', error));
         }
+
+        // 自動開始掃描
+        startScan();
     </script>
 </body>
 </html>

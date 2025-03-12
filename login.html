@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <!-- <h1>XXX公司</h1> -->
+    <form id="login-form">
+        <h2>★ 員工登入 ★</h2>
+        帳號
+        <input type="text" id="username" required><br>
+        密碼
+        <input type="password" id="password" required><br>
+        <button type="submit">登入</button>
+    </form>
+
+    <script>
+        document.getElementById("login-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+
+            // 簡單帳號密碼驗證（可以改成從 Google Sheets 讀取）
+            if (username === "admin" && password === "1234") {
+                sessionStorage.setItem("emp_id", username);
+                window.location.href = "main.html";
+            } else {
+                document.getElementById("message").innerText = "登入失敗";
+            }
+        });
+    </script>
+</body>
+</html>
