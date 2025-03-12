@@ -1,5 +1,3 @@
-// 日曆顯示
-
 document.addEventListener("DOMContentLoaded", function () {
     const monthTitle = document.querySelector(".month-title");
     const daysContainer = document.querySelector(".days");
@@ -87,27 +85,39 @@ document.addEventListener("DOMContentLoaded", function () {
     updateCalendar();
 });
 
-// 計算出席
-const SHEET_ID = "1LOYGHH4Sn0TTDtDPpEU_oeYkkOivqxpwTJA-L4EyPN8";
-const API_KEY = "你的API金鑰";
-const SHEET_NAME = "打卡紀錄"; 
+const webAppUrl = "https://script.google.com/macros/s/AKfycbxcIkbdEaumzcqyyAKeT2PiC3l0yhoF2FC6zG7WrNyakuCIkLwpmiBDdLwPW6BhUzoPxA/exec"; // 在 Apps Script 部署後取得的 
 
 async function fetchAttendanceData() {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-    
     try {
-        let response = await fetch(url);
-        let data = await response.json();
-        
-        if (data.values) {
-            processAttendanceData(data.values);
-        } else {
-            console.error("無法取得資料");
+      let response = await fetch(webAppUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
         }
+      });
+  
+      if (!response.ok) {
+        throw new Error("HTTP 錯誤，狀態碼：" + response.status);
+      }
+  
+      let data = await response.json();
+      console.log(data);  // 檢查是否成功取得資料
     } catch (error) {
-        console.error("錯誤:", error);
+      console.error("錯誤:", error);
     }
-}
+  }
+
+// async function fetchAttendanceData() {
+//   try {
+//     let response = await fetch(webAppUrl);
+//     let data = await response.json();
+    
+//     // 處理資料並更新日曆
+//     processAttendanceData(data);
+//   } catch (error) {
+//     console.error("錯誤:", error);
+//   }
+// }
 
 function processAttendanceData(rows) {
     let employeeId = document.getElementById("employeeId").textContent;
@@ -125,7 +135,6 @@ function processAttendanceData(rows) {
     updateCalendar(attendance);
 }
 
-// 修改 updateCalendar，使其標記出勤狀態
 function updateCalendar(attendance) {
     // ... 你的日曆渲染邏輯
     let days = document.querySelectorAll(".day");
@@ -138,5 +147,4 @@ function updateCalendar(attendance) {
     });
 }
 
-// 執行抓取資料
 fetchAttendanceData();
