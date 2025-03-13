@@ -85,53 +85,30 @@ document.addEventListener("DOMContentLoaded", function () {
     updateCalendar();
 });
 
-const webAppUrl = "https://cors-anywhere.herokuapp.com/https://script.google.com/macros/s/AKfycbxcIkbdEaumzcqyyAKeT2PiC3l0yhoF2FC6zG7WrNyakuCIkLwpmiBDdLwPW6BhUzoPxA/exec"; // 在 Apps Script 部署後取得的 
+const webAppUrl = "http://localhost/IoT/fetch_attendance.php";  // 改為本地 PHP API
 
 async function fetchAttendanceData() {
     try {
-      let response = await fetch(webAppUrl, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-  
-      if (!response.ok) {
-        throw new Error("HTTP 錯誤，狀態碼：" + response.status);
-      }
-  
-      let data = await response.json();
-      console.log(data);  // 檢查是否成功取得資料
+        let response = await fetch(webAppUrl);
+        let data = await response.json();
+
+        console.log(data); 
+        processAttendanceData(data);
     } catch (error) {
-      console.error("錯誤:", error);
+        console.error("錯誤:", error);
     }
 }
-  
-// async function fetchAttendanceData() {
-//   try {
-//     let response = await fetch(webAppUrl);
-//     let data = await response.json();
-    
-//     // 處理資料並更新日曆
-//     processAttendanceData(data);
-//   } catch (error) {
-//     console.error("錯誤:", error);
-//   }
-// }
 
 function processAttendanceData(rows) {
     let employeeId = document.getElementById("employeeId").textContent;
     let attendance = {};
 
-    // 過濾員工資料
-    for (let i = 1; i < rows.length; i++) {
-        let [date, id, status] = rows[i];
-        if (id === employeeId) {
-            attendance[date] = status;
+    rows.forEach(row => {
+        if (row.employee_id === employeeId) {
+            attendance[row.date] = row.status;
         }
-    }
+    });
 
-    // 更新日曆
     updateCalendar(attendance);
 }
 
