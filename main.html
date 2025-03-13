@@ -33,6 +33,14 @@
         function logout(){
             window.location.href="login.html";
         }
+        let empId = sessionStorage.getItem("emp_id");
+        if (empId) {
+            console.log("登入的使用者 ID:", empId);
+            // 可以在這裡進行其他操作，比如顯示在頁面上
+            document.getElementById("employeeId").innerText = empId;
+        } else {
+            console.log("沒有找到登入的使用者 ID");
+        }
     </script>
 </body>
 </html>

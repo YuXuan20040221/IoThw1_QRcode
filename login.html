@@ -8,7 +8,6 @@
 
 </head>
 <body>
-    <!-- <h1>XXX公司</h1> -->
     <form id="login-form">
         <h2>★ 員工登入 ★</h2>
         帳號
@@ -24,14 +23,27 @@
             let username = document.getElementById("username").value;
             let password = document.getElementById("password").value;
 
-            // 簡單帳號密碼驗證（可以改成從 Google Sheets 讀取）
-            if (username === "admin" && password === "1234") {
-                sessionStorage.setItem("emp_id", username);
-                window.location.href = "main.html";
-            } else {
-                document.getElementById("message").innerText = "登入失敗";
-            }
+            fetch('http://localhost/IoT/login.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `username=${username}&password=${password}`
+            })
+            .then(response => response.json())  // 解析 JSON 回應
+            .then(data => {
+                console.log(data);  // 顯示伺服器回應內容，方便排查
+                if (data.success) {
+                    sessionStorage.setItem("emp_id", data.ID);  // 使用ID而不是username
+                    window.location.href = "main.html";
+                } else {
+                    document.getElementById("message").innerText = data.message || "登入失敗";
+                }
+            })
+            .catch(error => {
+                console.error('錯誤:', error);
+            });
         });
-    </script>
+    </script>        
 </body>
 </html>
