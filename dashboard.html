@@ -6,7 +6,6 @@
     <title>打卡系統</title>
     <script src="https://unpkg.com/@zxing/library@latest"></script>
     <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
     <h1>Start WORK!!!</h1>
@@ -16,40 +15,60 @@
     <p id="status"></p>
 
     <script>
-        // 確保使用者已登入
-        // let emp_id = sessionStorage.getItem("emp_id");
-        // if (!emp_id) {
-        //     window.location.href = "login.html";
-        // }
+        // Google Apps Script Web App 部署網址（請確保是最新的）
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzpGODV0yj7ZZkUQ-XTajxKk-mbWVa1iX5Q0tV_A2PGUfVOncc4cFqKzgYU16L3D67Mug/exec";
 
         let scanner = new ZXing.BrowserQRCodeReader();
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbxcIkbdEaumzcqyyAKeT2PiC3l0yhoF2FC6zG7WrNyakuCIkLwpmiBDdLwPW6BhUzoPxA/exec";  // 替換為你的 Google Apps Script 網址
 
         function startScan() {
             scanner.decodeFromVideoDevice(null, 'preview', (result, err) => {
                 if (result) {
-                    let qr_code_data = result.text;
-                    sendToGoogleSheets(emp_id, qr_code_data);
-                    scanner.reset(); // 掃描成功後停止
+                    let qr_code_data = result.text.trim();  // 確保去除空格
+                    console.log("✅ QR Code 掃描成功：", qr_code_data);
+
+                    // 解析 QR Code 內容
+                    let [emp_id, emp_name] = qr_code_data.split(",");
+                    if (!emp_id || !emp_name) {
+                        document.getElementById("status").innerText = "❌ 無效的 QR Code 格式";
+                        return;
+                    }
+
+                    sendToGoogleSheets(emp_id, emp_name);
+                    scanner.reset(); // 停止掃描，避免重複提交
                 }
             });
         }
 
-        function sendToGoogleSheets(emp_id, qr_code_data) {
-            fetch(GAS_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ emp_id: emp_id, qr_data: qr_code_data, status: '上班' })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("status").innerText = data.message;
-            })
-            .catch(error => console.error('Error:', error));
-        }
+       
+function sendToGoogleSheets(emp_id, emp_name) {
+    let timestamp = new Date().toISOString();
 
-        // 自動開始掃描
-        startScan();
+    console.log("📤 傳送資料至 Google Sheets：", { emp_id, emp_name, timestamp, status: "上班" });
+
+    fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        mode: 'cors',  // 允許跨來源請求
+        body: JSON.stringify({ emp_id, emp_name, timestamp, status: '上班' })
+    })
+    .then(response => response.json()) // 解析 JSON 回應
+    .then(data => {
+        console.log("🔹 Google Sheets 回應：", data);
+        if (data.status === "success") {
+            document.getElementById("status").innerText = "✅ 打卡成功：" + data.message;
+        } else {
+            document.getElementById("status").innerText = "❌ 錯誤：" + data.message;
+        }
+    })
+    .catch(error => {
+        console.error("❌ 網絡請求失敗：", error);
+        document.getElementById("status").innerText = "❌ 連線錯誤：" + error.message;
+    });
+}
+
+
+        startScan();  // 啟動掃描
     </script>
+    
 </body>
 </html>

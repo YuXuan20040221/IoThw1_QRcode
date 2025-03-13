@@ -50,23 +50,35 @@
     <script>
         // Google Sheets API 載入函式，讀取資料並格式化為適合顯示的事件
         function getAttendanceData() {
-            // 這裡假設你已經有授權來讀取 Google Sheets 資料
-            // 假設資料結構：日期、員工編號、狀態（請假、遲到、上班）
-
-            const attendanceData = [
-                { date: '2025-03-01', status: '請假' },
-                { date: '2025-03-05', status: '遲到' },
-                { date: '2025-03-08', status: '上班' }
-            ];
-
-            return attendanceData.map(item => {
-                return {
-                    title: item.status,
-                    start: item.date,
-                    description: item.status
-                };
-            });
+            return fetch(GAS_URL + "?action=get")
+                .then(response => response.json())
+                .then(data => {
+                    return data.map(item => {
+                        return {
+                            title: item.status,
+                            start: item.date,
+                            description: item.status
+                        };
+                    });
+                });
         }
+        
+        $(document).ready(async function() {
+            let events = await getAttendanceData();
+            
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,agendaWeek,agendaDay'
+                },
+                events: events,
+                eventRender: function(event, element) {
+                    element.attr('title', event.description);
+                }
+            });
+        });
+        
 
         // 初始化日曆
         $(document).ready(function() {
