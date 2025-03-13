@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
     updateCalendar();
 });
 
-const webAppUrl = "https://script.google.com/macros/s/AKfycbxcIkbdEaumzcqyyAKeT2PiC3l0yhoF2FC6zG7WrNyakuCIkLwpmiBDdLwPW6BhUzoPxA/exec"; // 在 Apps Script 部署後取得的 
+const webAppUrl = "https://cors-anywhere.herokuapp.com/https://script.google.com/macros/s/AKfycbxcIkbdEaumzcqyyAKeT2PiC3l0yhoF2FC6zG7WrNyakuCIkLwpmiBDdLwPW6BhUzoPxA/exec"; // 在 Apps Script 部署後取得的 
 
 async function fetchAttendanceData() {
     try {
@@ -105,8 +105,8 @@ async function fetchAttendanceData() {
     } catch (error) {
       console.error("錯誤:", error);
     }
-  }
-
+}
+  
 // async function fetchAttendanceData() {
 //   try {
 //     let response = await fetch(webAppUrl);
