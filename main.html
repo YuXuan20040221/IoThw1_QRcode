@@ -11,7 +11,7 @@
 <body>
     <!-- 上方bar -->
     <div class="navbar">
-        <span>員工編號: <strong id="employeeId">12345</strong></span>
+        <span>員工編號: <strong id="employeeId"></strong></span>
         <button id="logoutBtn" onclick="logout()">登出</button>
     </div>
 
@@ -26,6 +26,19 @@
             <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
         </div>
         <div class="days">
+        </div>
+    </div>
+
+    <!-- 請假彈出視窗 -->
+    <div id="leave-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>請假申請</h2>
+            <label for="leave-date" style="float: left;">請假日期：</label><br>
+            <input type="text" id="leave-date" readonly><br>
+            <label for="leave-reason" style="float: left;">請假原因：</label><br>
+            <textarea id="leave-reason" required></textarea><br>
+            <button id="submit-leave">提交</button>
         </div>
     </div>
 

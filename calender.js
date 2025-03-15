@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const daysContainer = document.querySelector(".days");
     const prevMonthBtn = document.querySelector(".prev-month");
     const nextMonthBtn = document.querySelector(".next-month");
+    const leaveBtn = document.getElementById("submit-leave");
 
     let currentDate = new Date();
     let currentYear = currentDate.getFullYear();
@@ -17,7 +18,33 @@ document.addEventListener("DOMContentLoaded", function () {
         return new Date(year, month + 1, 0).getDate();
     }
 
-    function updateCalendar() {
+    async function fetchAttendanceData() {
+        const webAppUrl = "http://localhost/IoT/fetch_attendance.php";  // 改為本地 PHP API
+        try {
+            let response = await fetch(webAppUrl);
+            let data = await response.json();
+    
+            console.log(data); 
+            processAttendanceData(data);
+        } catch (error) {
+            console.error("錯誤:", error);
+        }
+    }
+    
+    function processAttendanceData(rows) {
+        let employeeId = document.getElementById("employeeId").textContent;
+        let attendance = {};
+    
+        rows.forEach(row => {
+            if (row.ID === employeeId) {
+                attendance[row.DATE] = row.STATUS;
+            }
+        });
+    
+        updateCalendar(attendance);
+    }
+
+    function updateCalendar(attendance) {
         monthTitle.textContent = `${monthNames[currentMonth]} ${currentYear}`;
         daysContainer.innerHTML = "";
 
@@ -38,6 +65,8 @@ document.addEventListener("DOMContentLoaded", function () {
             let dayDiv = document.createElement("div");
             dayDiv.classList.add("day");
             dayDiv.textContent = day;
+            let dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            dayDiv.dataset.date = dateStr;
 
             // 標記今天的日期
             if (
@@ -47,6 +76,18 @@ document.addEventListener("DOMContentLoaded", function () {
             ) {
                 dayDiv.classList.add("today");
             }
+
+            //標記請假
+            if (attendance[dateStr]) {
+                if(attendance[dateStr] === "leave"){
+                    dayDiv.classList.add("leave");
+                }
+            }
+
+            dayDiv.addEventListener("click", function() {
+                document.getElementById("leave-date").value = this.dataset.date;
+                document.getElementById("leave-modal").style.display = "block";
+            });
 
             daysContainer.appendChild(dayDiv);
         }
@@ -82,46 +123,38 @@ document.addEventListener("DOMContentLoaded", function () {
         updateCalendar();
     });
 
-    updateCalendar();
+    leaveBtn.addEventListener("click", function(event) {
+        event.preventDefault();
+        let empId = sessionStorage.getItem("emp_id");;
+        let leaveDate = document.getElementById("leave-date").value;
+        let leaveReason = document.getElementById("leave-reason").value;
+        
+        if (!leaveDate || !leaveReason) {
+            alert("請填寫完整的請假資料！");
+            return;
+        }
+        
+        let formData = new URLSearchParams();
+        formData.append("ID", empId);
+        formData.append("DATE", leaveDate);
+        formData.append("NOTE", leaveReason);
+
+        fetch('http://localhost/IoT/LEAVE.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData.toString()
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);  
+            alert(data.message);
+        })
+        .catch(error => {
+            console.error('錯誤:', error);
+        });
+    });
+
+    fetchAttendanceData();
 });
-
-const webAppUrl = "http://localhost/IoT/fetch_attendance.php";  // 改為本地 PHP API
-
-async function fetchAttendanceData() {
-    try {
-        let response = await fetch(webAppUrl);
-        let data = await response.json();
-
-        console.log(data); 
-        processAttendanceData(data);
-    } catch (error) {
-        console.error("錯誤:", error);
-    }
-}
-
-function processAttendanceData(rows) {
-    let employeeId = document.getElementById("employeeId").textContent;
-    let attendance = {};
-
-    rows.forEach(row => {
-        if (row.employee_id === employeeId) {
-            attendance[row.date] = row.status;
-        }
-    });
-
-    updateCalendar(attendance);
-}
-
-function updateCalendar(attendance) {
-    // ... 你的日曆渲染邏輯
-    let days = document.querySelectorAll(".day");
-    days.forEach(day => {
-        let dateString = `2025-03-${String(day.textContent).padStart(2, "0")}`;
-        if (attendance[dateString]) {
-            day.classList.add(attendance[dateString] === "請假" ? "leave" : "present");
-            day.textContent += ` (${attendance[dateString]})`;
-        }
-    });
-}
-
-fetchAttendanceData();
