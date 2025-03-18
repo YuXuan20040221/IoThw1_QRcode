@@ -15,60 +15,45 @@
     <p id="status"></p>
 
     <script>
-        // Google Apps Script Web App 部署網址（請確保是最新的）
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzpGODV0yj7ZZkUQ-XTajxKk-mbWVa1iX5Q0tV_A2PGUfVOncc4cFqKzgYU16L3D67Mug/exec";
-
         let scanner = new ZXing.BrowserQRCodeReader();
-
+    
         function startScan() {
             scanner.decodeFromVideoDevice(null, 'preview', (result, err) => {
                 if (result) {
-                    let qr_code_data = result.text.trim();  // 確保去除空格
-                    console.log("✅ QR Code 掃描成功：", qr_code_data);
-
-                    // 解析 QR Code 內容
-                    let [emp_id, emp_name] = qr_code_data.split(",");
-                    if (!emp_id || !emp_name) {
-                        document.getElementById("status").innerText = "❌ 無效的 QR Code 格式";
-                        return;
-                    }
-
-                    sendToGoogleSheets(emp_id, emp_name);
+                    let emp_id = result.text.trim();  // 確保去除空格
+                    console.log("✅ QR Code 掃描成功：", emp_id);
                     scanner.reset(); // 停止掃描，避免重複提交
+                    send(emp_id);
+                    alert("✅ 打卡成功!");
                 }
             });
         }
+    
+        function send(emp_id) {
+            let formData = new URLSearchParams();
+            formData.append("ID", emp_id);
 
-       
-function sendToGoogleSheets(emp_id, emp_name) {
-    let timestamp = new Date().toISOString();
+            console.log("📤 送出請求 ID:", emp_id); // Debug 用
 
-    console.log("📤 傳送資料至 Google Sheets：", { emp_id, emp_name, timestamp, status: "上班" });
-
-    fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        mode: 'cors',  // 允許跨來源請求
-        body: JSON.stringify({ emp_id, emp_name, timestamp, status: '上班' })
-    })
-    .then(response => response.json()) // 解析 JSON 回應
-    .then(data => {
-        console.log("🔹 Google Sheets 回應：", data);
-        if (data.status === "success") {
-            document.getElementById("status").innerText = "✅ 打卡成功：" + data.message;
-        } else {
-            document.getElementById("status").innerText = "❌ 錯誤：" + data.message;
+            fetch("http://localhost/IoT/late.php", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            })
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                console.log(data)
+            })
+            .catch(error => {
+                console.error("❌ 網絡請求失敗:", error);
+            });
         }
-    })
-    .catch(error => {
-        console.error("❌ 網絡請求失敗：", error);
-        document.getElementById("status").innerText = "❌ 連線錯誤：" + error.message;
-    });
-}
-
-
-        startScan();  // 啟動掃描
-    </script>
+    
+        document.addEventListener("DOMContentLoaded", startScan);
+    </script>    
+    
     
 </body>
 </html>

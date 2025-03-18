@@ -62,30 +62,20 @@
 }
 
 .day:hover {
-    background: #f0f0f0;
+    background: #f0f0f0; 
 }
 
 .day.leave {
-    background: #ffcccc; /* 紅色 (請假) */
-    color: #900;
-    font-weight: bold;
+    background-color: #ecbeec;
 }
 
 .day.late {
     background: #ffeb99; /* 黃色 (遲到) */
-    color: #a60;
-    font-weight: bold;
 }
 
-.day.work {
-    background: #cce3ff; /* 綠色 (上班) */
-    color: #06a;
-    font-weight: bold;
-}
 
 .today {
-    background: #bbcf5f !important;
-    color: #fff;
+    color: #ff0000;
     font-weight: bold;
 }
 

@@ -23,8 +23,6 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             let response = await fetch(webAppUrl);
             let data = await response.json();
-    
-            console.log(data); 
             processAttendanceData(data);
         } catch (error) {
             console.error("錯誤:", error);
@@ -81,6 +79,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (attendance[dateStr]) {
                 if(attendance[dateStr] === "leave"){
                     dayDiv.classList.add("leave");
+                }else if (attendance[dateStr] === "late") {
+                    dayDiv.classList.add("late");
                 }
             }
 
@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
             currentMonth = 11;
             currentYear--;
         }
-        updateCalendar();
+        fetchAttendanceData();
     });
 
     nextMonthBtn.addEventListener("click", function () {
@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
             currentMonth = 0;
             currentYear++;
         }
-        updateCalendar();
+        fetchAttendanceData();
     });
 
     leaveBtn.addEventListener("click", function(event) {
@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
         formData.append("DATE", leaveDate);
         formData.append("NOTE", leaveReason);
 
-        fetch('http://localhost/IoT/LEAVE.php', {
+        fetch('http://localhost/IoT/leave.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
